@@ -12,7 +12,7 @@ import numpy as np
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 MODEL_PATH = os.environ.get("MODEL_PATH", "best.pt")
-CONF_THRESHOLD = 0.25
+CONF_THRESHOLD = float(os.environ.get("CONF_THRESHOLD", "0.5"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
