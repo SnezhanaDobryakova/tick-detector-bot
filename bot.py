@@ -27,13 +27,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    status_msg = await update.message.reply_text("📸 Фото получено, сканирую...")
+
     photo_file = await update.message.photo[-1].get_file()
     photo_bytes = await photo_file.download_as_bytearray()
     nparr = np.frombuffer(photo_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     if img is None:
-        await update.message.reply_text("Не удалось прочитать изображение.")
+        await status_msg.edit_text("Не удалось прочитать изображение.")
         return
 
     results = model(img, conf=CONF_THRESHOLD)
@@ -42,15 +44,18 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(detections) > 0:
         n = len(detections)
         confs = [f"{b.conf.item():.0%}" for b in detections]
-        await update.message.reply_text(
+        await status_msg.edit_text(
             f"✅ Да, на фото клещ!\n"
             f"Найдено: {n}\n"
             f"Уверенность: {', '.join(confs)}"
         )
     else:
-        await update.message.reply_text(
-            "❌ Нет, это не клещ."
-        )
+        await status_msg.edit_text("❌ Нет, это не клещ.")
+
+    annotated = results[0].plot()
+    success, buf = cv2.imencode(".jpg", annotated)
+    if success:
+        await update.message.reply_photo(photo=buf.tobytes())
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
