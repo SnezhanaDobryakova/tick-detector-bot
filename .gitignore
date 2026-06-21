@@ -1,0 +1,10 @@
+runs/
+test_results/
+yolov8n.pt
+yolo11n.pt
+__pycache__/
+*.pyc
+.DS_Store
+*.egg-info/
+dist/
+build/
